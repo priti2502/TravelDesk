@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TravelDesk.Data;
 
@@ -11,9 +12,11 @@ using TravelDesk.Data;
 namespace TravelDesk.Migrations
 {
     [DbContext(typeof(TravelDeskContext))]
-    partial class TravelDeskContextModelSnapshot : ModelSnapshot
+    [Migration("20240822101820_project")]
+    partial class project
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

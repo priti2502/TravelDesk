@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography.X509Certificates;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Security.Cryptography.X509Certificates;
 
 namespace TravelDesk.Models
 {
@@ -16,7 +17,11 @@ namespace TravelDesk.Models
         public DateTime FromDate { get; set; }
         public DateTime ToDate { get; set; }
         public string FromLocation { get; set; }
-        public string ToLocation { get; set; } 
+        public string ToLocation { get; set; }
+
+        public string? Comments { get; set; }
+        [Required]
+        public string Status { get; set; } = "Pending";
 
         public DateTime CreatedOn { get; set; }
         public DateTime? ModifiedOn { get; set; }

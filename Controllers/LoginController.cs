@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
@@ -16,6 +17,8 @@ namespace TravekDesk.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+
+
     public class LoginController : ControllerBase
     {
         private readonly TravelDeskContext _context;
@@ -42,41 +45,54 @@ namespace TravekDesk.Controllers
             return Unauthorized("Invalid email or password.");
         }
 
-        // Retrieve the role from Role table based on RoleId
-        var role = _context.Roles.FirstOrDefault(x => x.RoleId == user.RoleId);
+            // Retrieve the role from Role table based on RoleId
+            // var role = _context.Roles.FirstOrDefault(x => x.RoleId == user.RoleId);
+            string roleName = (from x in _context.Roles
+                               where x.RoleId == user.RoleId
+                               select x.RoleName).ToString();
 
-        if (role == null)
+        if (roleName == null)
         {
             return Unauthorized("Role not found.");
         }
 
-        loginModel.RoleName = role.RoleName;
+            loginModel.RoleName = roleName;
 
-        // Generate JWT token
-        var tokenString = GenerateJSONWebToken(user.UserId, user.Email, loginModel.RoleName);
-        response = Ok(new
-        {
-            token = tokenString,
-            employeeId = user.UserId,//for employee Autofill
-            firstName = user.FirstName,
-            lastName = user.LastName,
-            department = user.Department,
-            roleName = loginModel.RoleName,
-            roleId= user.RoleId
-        });
+            // Generate JWT token
+            var tokenString = GenerateJSONWebToken(user, roleName);
+            //var tokenString = GenerateJSONWebToken(user.UserId, user.Email, loginModel.RoleName);
+          
 
-        return response;
-    }
+            // Return the token, user details, and employee details
+            response = Ok(new
+            {
+                token = tokenString
+                //employeeId = user.UserId, // for employee Autofill
+                //firstName = user.FirstName,
+                //lastName = user.LastName,
+                //department = user.Department,
+                //roleName = loginModel.RoleName,
+                //roleId = user.RoleId,
+                //employees = employeeDetails // All employee details
+            });
 
-    private string GenerateJSONWebToken(int id, string email, string roleName)
+            return response;
+        }
+
+    private string GenerateJSONWebToken(User user,String role)
     {
         var claims = new[]
         {
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(JwtRegisteredClaimNames.Sid, id.ToString()),
-            new Claim(JwtRegisteredClaimNames.Email, email),
-            new Claim(ClaimTypes.Role, roleName),
-            new Claim("Date", DateTime.Now.ToString())
+           // new claim(jwtregisteredclaimnames.jti, guid.newguid().tostring()),
+           
+            //new claim(jwtregisteredclaimnames.sid, user.id.tostring()),
+            new Claim("Email", user.Email),
+
+           new Claim("userid",user.UserId.ToString()),
+           new Claim("name",string.Concat(user.FirstName," ",user.LastName)), 
+            new Claim("role", role),
+            new Claim("roleId",user.RoleId.ToString()) 
+            //new Claim("date", datetime.now.tostring())
         };
 
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));

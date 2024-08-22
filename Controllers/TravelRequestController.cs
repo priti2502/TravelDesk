@@ -3,6 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using TravelDesk.Data;
 using TravelDesk.DTO;
 using TravelDesk.Models;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace TravelDesk.Controllers
 {
@@ -19,23 +22,20 @@ namespace TravelDesk.Controllers
 
         // GET: api/TravelRequest
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<TravelRequestDto>>> GetTravelRequests()
+        public async Task<ActionResult<DashboardDto>> GetTravelRequests()
         {
             var travelRequests = await _context.TravelRequests
                 .Include(tr => tr.User)
                 .Include(tr => tr.Project)
-                
                 .Include(tr => tr.User.Department)
                 .Select(tr => new TravelRequestDto
                 {
                     TravelRequestId = tr.TravelRequestId,
-                    
                     User = new UserDto
                     {
                         UserId = tr.User.UserId,
                         FirstName = tr.User.FirstName,
-                        LastName=tr.User.LastName,
-
+                        LastName = tr.User.LastName,
                         Department = new DepartmentDto
                         {
                             DepartmentId = tr.User.Department.DepartmentId,
@@ -46,17 +46,41 @@ namespace TravelDesk.Controllers
                     {
                         ProjectId = tr.Project.ProjectId,
                         ProjectName = tr.Project.ProjectName
-                    }
+                    },
+                    ReasonForTravel = tr.ReasonForTravel,
+                    FromDate = tr.FromDate,
+                    ToDate = tr.ToDate,
+                    FromLocation = tr.FromLocation,
+                    ToLocation = tr.ToLocation,
+                    Status = tr.Status,
+                    Comments = tr.Comments
                 })
                 .ToListAsync();
 
-            return Ok(travelRequests);
+            var dashboard = new DashboardDto
+            {
+                Requests = travelRequests
+            };
+
+            return Ok(dashboard);
+        }
+        [HttpPost]
+        public async Task<IActionResult> PostTravelRequest(TravelRequest travelRequest)
+        {
+            // Ensure status and comments are not included
+            travelRequest.Status = "Pending"; // Default status
+            travelRequest.Comments = null; // Default comments
+
+            _context.TravelRequests.Add(travelRequest);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetTravelRequests), new { id = travelRequest.TravelRequestId }, travelRequest);
         }
 
 
-        // GET: api/TravelRequest/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<TravelRequest>> GetTravelRequest(int id)
+        // PUT: api/TravelRequest/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateTravelRequest(int id, TravelRequestDto travelRequestDto)
         {
             var travelRequest = await _context.TravelRequests.FindAsync(id);
 
@@ -65,38 +89,9 @@ namespace TravelDesk.Controllers
                 return NotFound();
             }
 
-            return travelRequest;
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> PostTravelRequest(TravelRequest travelRequest)
-        {
-             
-
-            _context.TravelRequests.Add(travelRequest);
-
-            try
-            {
-                await _context.SaveChangesAsync();
-                return Ok();
-            }
-            catch (DbUpdateException ex)
-            {
-                // Log the exception details
-              
-                return StatusCode(500, "Internal server error.");
-            }
-        }
-
-
-        // PUT: api/TravelRequest/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutTravelRequest(int id, TravelRequest travelRequest)
-        {
-            if (id != travelRequest.TravelRequestId)
-            {
-                return BadRequest();
-            }
+            travelRequest.Status = travelRequestDto.Status;
+            travelRequest.Comments = travelRequestDto.Comments;
+            travelRequest.ModifiedOn = DateTime.Now;
 
             _context.Entry(travelRequest).State = EntityState.Modified;
 
@@ -115,22 +110,6 @@ namespace TravelDesk.Controllers
                     throw;
                 }
             }
-
-            return NoContent();
-        }
-
-        // DELETE: api/TravelRequest/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteTravelRequest(int id)
-        {
-            var travelRequest = await _context.TravelRequests.FindAsync(id);
-            if (travelRequest == null)
-            {
-                return NotFound();
-            }
-
-            _context.TravelRequests.Remove(travelRequest);
-            await _context.SaveChangesAsync();
 
             return NoContent();
         }

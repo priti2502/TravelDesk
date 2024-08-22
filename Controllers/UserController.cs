@@ -12,7 +12,7 @@ namespace TravekDesk.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    
+
     public class UserController : ControllerBase
     {
         private readonly TravelDeskContext _context;
@@ -83,17 +83,51 @@ namespace TravekDesk.Controllers
             return NoContent();
         }
         [HttpGet("managers")]
-        public  IActionResult GetManagers()
+        public IActionResult GetManagers()
         {
             var users = _context.Users
                .Include(u => u.Role)
                .Include(u => u.Department)
                .Include(u => u.Manager)
-               .Where(u=>u.RoleId==3)
+               .Where(u => u.RoleId == 3)
                .ToList();
 
             return Ok(users);
 
         }
+
+        [HttpGet("current")]
+        // Assuming you want to restrict this endpoint to authorized users only
+        public async Task<ActionResult<User>> GetCurrentUser()
+        {
+            // Assuming the user ID is available in the Claims of the authenticated user
+            var userId = User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value;
+
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
+
+            var user = await _context.Users
+                .Include(u => u.Department)
+                .Where(u => u.UserId == int.Parse(userId))
+                .FirstOrDefaultAsync();
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            // Optional: Select specific properties to return
+            var userResponse = new
+            {
+                user.UserId,
+                user.FirstName,
+                user.LastName,
+                DepartmentName = user.Department.DepartmentName
+            };
+
+            return Ok(userResponse);
+        }
     }
-}
+    }
