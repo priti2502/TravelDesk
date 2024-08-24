@@ -6,6 +6,7 @@
         public UserDto User { get; set; }
         public ProjectDto Project { get; set; }
         public string ReasonForTravel { get; set; }
+        
         public DateTime FromDate { get; set; }
         public DateTime ToDate { get; set; }
         public string FromLocation { get; set; }

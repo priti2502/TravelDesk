@@ -35,6 +35,7 @@ namespace TravekDesk.Controllers
                 .Include(u => u.Role)
                 .Include(u => u.Department)
                 .Include(u => u.Manager)
+                .Where(u=>u.Role.RoleName!="Admin")
                 .ToList();
 
             return Ok(users);
@@ -56,17 +57,37 @@ namespace TravekDesk.Controllers
         }
 
         [HttpPut("users/{id}")]
-        public IActionResult UpdateUser(int id, User user)
+        public IActionResult UpdateUser(int id, User updateUser)
         {
-            if (id != user.UserId)
+            if (id != updateUser.UserId)
             {
                 return BadRequest();
             }
 
-            _context.Entry(user).State = EntityState.Modified;
+            var existingUser = _context.Users
+                .Include(u => u.Role)
+                .Include(u => u.Department)
+                .Include(u => u.Manager)
+                .FirstOrDefault(u => u.UserId == id);
+
+            if (existingUser == null)
+            {
+                return NotFound();
+            }
+
+            // Update only specific fields
+            existingUser.FirstName = updateUser.FirstName ?? existingUser.FirstName;
+            existingUser.LastName = updateUser.LastName ?? existingUser.LastName;
+            existingUser.Password = updateUser.Password ?? existingUser.Password;
+            existingUser.Address = updateUser.Address ?? existingUser.Address;
+
+            // Save changes
+            _context.Entry(existingUser).State = EntityState.Modified;
             _context.SaveChanges();
+
             return NoContent();
         }
+
 
 
         [HttpDelete("users/{id}")]

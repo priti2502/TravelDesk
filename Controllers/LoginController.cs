@@ -89,9 +89,14 @@ namespace TravekDesk.Controllers
             new Claim("Email", user.Email),
 
            new Claim("userid",user.UserId.ToString()),
-           new Claim("name",string.Concat(user.FirstName," ",user.LastName)), 
+           new Claim("firstname",user.FirstName),
+              new Claim("lastname",user.LastName),
+              new Claim("departmentid",user.DepartmentId.ToString()),
             new Claim("role", role),
-            new Claim("roleId",user.RoleId.ToString()) 
+            new Claim("managerid",user.ManagerId.ToString ()), 
+            new Claim("roleId",user.RoleId.ToString()) ,
+           
+
             //new Claim("date", datetime.now.tostring())
         };
 

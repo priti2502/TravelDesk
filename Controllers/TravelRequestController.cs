@@ -113,6 +113,95 @@ namespace TravelDesk.Controllers
 
             return NoContent();
         }
+        [HttpGet("user/{userId}")]
+        public async Task<ActionResult<IEnumerable<TravelRequestDto>>> GetTravelRequestsByUserId(int userId)
+        {
+            var travelRequests = await _context.TravelRequests
+                .Where(tr => tr.UserId == userId)
+                .Include(tr => tr.User)
+                .Include(tr => tr.Project)
+                .Include(tr => tr.User.Department)
+                .Select(tr => new TravelRequestDto
+                {
+                    TravelRequestId = tr.TravelRequestId,
+                    User = new UserDto
+                    {
+                        UserId = tr.User.UserId,
+                        FirstName = tr.User.FirstName,
+                        LastName = tr.User.LastName,
+                        Department = new DepartmentDto
+                        {
+                            DepartmentId = tr.User.Department.DepartmentId,
+                            DepartmentName = tr.User.Department.DepartmentName
+                        }
+                    },
+                    Project = new ProjectDto
+                    {
+                        ProjectId = tr.Project.ProjectId,
+                        ProjectName = tr.Project.ProjectName
+                    },
+                    ReasonForTravel = tr.ReasonForTravel,
+                    FromDate = tr.FromDate,
+                    ToDate = tr.ToDate,
+                    FromLocation = tr.FromLocation,
+                    ToLocation = tr.ToLocation,
+                    Status = tr.Status,
+                    Comments = tr.Comments
+                })
+                .ToListAsync();
+
+            if (travelRequests == null || !travelRequests.Any())
+            {
+                return NotFound("No travel requests found for this user.");
+            }
+
+            return Ok(travelRequests);
+        }
+
+        [HttpGet("{TravelRequestId}")]
+        public async Task<ActionResult<TravelRequestDto>> GetTravelRequest(int TravelRequestId)
+        {
+            var travelRequest = await _context.TravelRequests
+                .Include(tr => tr.User)
+                .ThenInclude(u => u.Department)
+                .Include(tr => tr.Project)
+                .Where(tr => tr.TravelRequestId == TravelRequestId)
+                .Select(tr => new TravelRequestDto
+                {
+                    TravelRequestId = tr.TravelRequestId,
+                    User = new UserDto
+                    {
+                        UserId = tr.User.UserId,
+                        FirstName = tr.User.FirstName,
+                        LastName = tr.User.LastName,
+                        Department = new DepartmentDto
+                        {
+                            DepartmentId = tr.User.Department.DepartmentId,
+                            DepartmentName = tr.User.Department.DepartmentName
+                        }
+                    },
+                    Project = new ProjectDto
+                    {
+                        ProjectId = tr.Project.ProjectId,
+                        ProjectName = tr.Project.ProjectName
+                    },
+                    ReasonForTravel = tr.ReasonForTravel,
+                    FromDate = tr.FromDate,
+                    ToDate = tr.ToDate,
+                    FromLocation = tr.FromLocation,
+                    ToLocation = tr.ToLocation,
+                    Status = tr.Status,
+                    Comments = tr.Comments
+                })
+                .FirstOrDefaultAsync();
+
+            if (travelRequest == null)
+            {
+                return NotFound($"Travel request with ID {TravelRequestId} not found.");
+            }
+
+            return Ok(travelRequest);
+        }
 
         private bool TravelRequestExists(int id)
         {

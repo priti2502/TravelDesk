@@ -39,6 +39,7 @@ public class User
 
     public int? ManagerId { get; set; } // Make this nullable
     public User? Manager { get; set; }
+    
     public ICollection<TravelRequest> TravelRequests { get; set; } = new List<TravelRequest>();
     public int CreatedBy { get; set; }
     public DateTime CreatedOn { get; set; } = DateTime.Now;
