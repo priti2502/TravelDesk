@@ -23,7 +23,8 @@ namespace TravelDesk.Models
 
         public string? Comments { get; set; }
 
-        public string TicketUrl { get; set; }
+        public string? TicketUrl { get; set; }
+
         [Required]
         public string Status { get; set; } = "Pending";
 

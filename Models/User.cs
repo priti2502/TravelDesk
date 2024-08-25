@@ -42,7 +42,7 @@ public class User
     public User? Manager { get; set; }
     [JsonIgnore]
     public ICollection<TravelRequest> TravelRequests { get; set; } = new List<TravelRequest>();
-    public int CreatedBy { get; set; }
+    public int CreatedBy { get; set; } = 1;
     public DateTime CreatedOn { get; set; } = DateTime.Now;
     public string? ModifiedBy { get; set; }
     public DateTime? ModifiedOn { get; set; }

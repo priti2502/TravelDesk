@@ -66,14 +66,18 @@ namespace TravelDesk.Data
                 .WithMany(p => p.TravelRequests)
                 .HasForeignKey(tr => tr.ProjectId)
                 .OnDelete(DeleteBehavior.Restrict); // Or NoAction
+            modelBuilder.Entity<TravelRequest>()
+    .Property(tr => tr.TicketUrl)
+    .IsRequired(false); // Allow nulls
 
-        
+
+
 
 
 
         }
-      
-        
+
+
     }
     
 }

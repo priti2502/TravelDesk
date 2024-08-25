@@ -13,8 +13,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
-    // Preserve object references to handle cycles
-    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+    // Ignore cycles to avoid adding $id and $ref metadata
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     options.JsonSerializerOptions.MaxDepth = 64; // Increase depth if needed
 });
 builder.Services.AddEndpointsApiExplorer();
