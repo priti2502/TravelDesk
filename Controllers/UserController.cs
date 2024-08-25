@@ -117,38 +117,38 @@ namespace TravekDesk.Controllers
 
         }
 
-        [HttpGet("current")]
-        // Assuming you want to restrict this endpoint to authorized users only
-        public async Task<ActionResult<User>> GetCurrentUser()
-        {
-            // Assuming the user ID is available in the Claims of the authenticated user
-            var userId = User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value;
+        //[HttpGet("current")]
+        //// Assuming you want to restrict this endpoint to authorized users only
+        //public async Task<ActionResult<User>> GetCurrentUser()
+        //{
+        //    // Assuming the user ID is available in the Claims of the authenticated user
+        //    var userId = User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value;
 
-            if (userId == null)
-            {
-                return Unauthorized();
-            }
+        //    if (userId == null)
+        //    {
+        //        return Unauthorized();
+        //    }
 
-            var user = await _context.Users
-                .Include(u => u.Department)
-                .Where(u => u.UserId == int.Parse(userId))
-                .FirstOrDefaultAsync();
+        //    var user = await _context.Users
+        //        .Include(u => u.Department)
+        //        .Where(u => u.UserId == int.Parse(userId))
+        //        .FirstOrDefaultAsync();
 
-            if (user == null)
-            {
-                return NotFound();
-            }
+        //    if (user == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            // Optional: Select specific properties to return
-            var userResponse = new
-            {
-                user.UserId,
-                user.FirstName,
-                user.LastName,
-                DepartmentName = user.Department.DepartmentName
-            };
+        //    // Optional: Select specific properties to return
+        //    var userResponse = new
+        //    {
+        //        user.UserId,
+        //        user.FirstName,
+        //        user.LastName,
+        //        DepartmentName = user.Department.DepartmentName
+        //    };
 
-            return Ok(userResponse);
-        }
+        //    return Ok(userResponse);
+        //}
     }
     }

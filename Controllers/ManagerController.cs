@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using System.IdentityModel.Tokens.Jwt;
+using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using TravelDesk.Data;
 using TravelDesk.DTO;
@@ -16,114 +14,119 @@ namespace TravelDesk.Controllers
     public class ManagerController : ControllerBase
     {
         private readonly TravelDeskContext _context;
-        private readonly IConfiguration _configuration;
 
-        public ManagerController(TravelDeskContext context, IConfiguration configuration)
+        public ManagerController(TravelDeskContext context)
         {
             _context = context;
-            _configuration = configuration;
         }
 
-        [HttpGet("employees-with-travel-requests")]
-        public IActionResult GetEmployeesWithTravelRequests(int userId)
+        // GET: api/Manager/{managerId}/Requests
+        [HttpGet("{managerId}/Requests")]
+        public async Task<ActionResult<IEnumerable<TravelRequestDto>>> GetPendingRequests(int managerId)
         {
-            // Fetch all travel requests made by users managed by the given userId
-            var requests = _context.TravelRequests
-                .Include(r => r.User) // Ensure User entity is included
-                .Include(r => r.Project) // Include Project entity if needed
-                .Where(r => r.User.ManagerId == userId)
-                .ToList();
-
-            var employeeRequests = requests
-                .GroupBy(r => r.User) // Group requests by user
-                .Select(group => new
+            var pendingRequests = await _context.TravelRequests
+                .Where(tr => tr.User.ManagerId == managerId && tr.Status == "Pending")
+                .Include(tr => tr.Project)
+                .Include(tr => tr.User)
+                .Select(tr => new TravelRequestDto
                 {
+                    TravelRequestId = tr.TravelRequestId,
+                    Project = new ProjectDto
+                    {
+                        ProjectId = tr.Project.ProjectId,
+                        ProjectName = tr.Project.ProjectName
+                    },
                     User = new UserDto
                     {
-                        UserId = group.Key.UserId,
-                        FirstName = group.Key.FirstName,
-                        LastName = group.Key.LastName,
-                        Department = new DepartmentDto
-                        {
-                            DepartmentId = group.Key.Department.DepartmentId,
-                            DepartmentName = group.Key.Department.DepartmentName
-                        }
+                        UserId = tr.User.UserId,
+                        FirstName = tr.User.FirstName,
+                        LastName = tr.User.LastName
+                       
                     },
-                    Requests = group.Select(r => new TravelRequestDto
-                    {
-                        TravelRequestId = r.TravelRequestId,
-                        Project = new ProjectDto
-                        {
-                            ProjectId = r.Project.ProjectId,
-                            ProjectName = r.Project.ProjectName
-                        },
-                        ReasonForTravel = r.ReasonForTravel,
-                        FromDate = r.FromDate,
-                        ToDate = r.ToDate,
-                        FromLocation = r.FromLocation,
-                        ToLocation = r.ToLocation,
-                        Status = r.Status,
-                        Comments = r.Comments
-                    }).ToList()
+                    ReasonForTravel = tr.ReasonForTravel,
+                    FromDate = tr.FromDate,
+                    ToDate = tr.ToDate,
+                    FromLocation = tr.FromLocation,
+                    ToLocation = tr.ToLocation,
+                    Status = tr.Status,
+                    Comments = tr.Comments
                 })
-                .ToList();
+                .ToListAsync();
 
-            return Ok(new { employees = employeeRequests });
+            if (!pendingRequests.Any())
+            {
+                return NotFound("No pending requests found for this manager.");
+            }
+
+            return Ok(pendingRequests);
         }
-
-
-        [HttpPost("requests/{id}/approve")]
-        public async Task<IActionResult> ApproveRequest(int id, [FromBody] CommentDto commentDto)
+        [HttpPut("ApproveRequest/{requestId}")]
+        public async Task<IActionResult> ApproveRequest(int requestId, [FromBody] CommentDto commentDto)
         {
-            var request = await _context.TravelRequests.FindAsync(id);
-            if (request == null)
+            var travelRequest = await _context.TravelRequests.FindAsync(requestId);
+            if (travelRequest == null)
             {
                 return NotFound();
             }
 
-            request.Status = "Approved";
-            request.Comments = commentDto.Comments;
-            _context.Entry(request).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
+            travelRequest.Status = "Approved";
+            travelRequest.Comments = commentDto.Comments; // Access comments from the DTO
+            _context.Entry(travelRequest).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!TravelRequestExists(requestId))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
             return NoContent();
         }
 
-        [HttpPost("requests/{id}/disapprove")]
-        public async Task<IActionResult> DisapproveRequest(int id, [FromBody] CommentDto commentDto)
+        [HttpPut("RejectRequest/{requestId}")]
+        public async Task<IActionResult> RejectRequest(int requestId, [FromBody] CommentDto commentDto)
         {
-            var request = await _context.TravelRequests.FindAsync(id);
-            if (request == null)
+            var travelRequest = await _context.TravelRequests.FindAsync(requestId);
+            if (travelRequest == null)
             {
                 return NotFound();
             }
 
-            request.Status = "Disapproved";
-            request.Comments = commentDto.Comments;
-            _context.Entry(request).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
+            travelRequest.Status = "Rejected";
+            travelRequest.Comments = commentDto.Comments; // Access comments from the DTO
+            _context.Entry(travelRequest).State = EntityState.Modified;
 
-            return NoContent();
-        }
-
-        [HttpPost("requests/{id}/return")]
-        public async Task<IActionResult> ReturnRequest(int id, [FromBody] CommentDto commentDto)
-        {
-            var request = await _context.TravelRequests.FindAsync(id);
-            if (request == null)
+            try
             {
-                return NotFound();
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!TravelRequestExists(requestId))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
             }
 
-            request.Status = "Returned";
-            request.Comments = commentDto.Comments;
-            _context.Entry(request).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
-
             return NoContent();
         }
 
-        
-
+        private bool TravelRequestExists(int id)
+        {
+            return _context.TravelRequests.Any(e => e.TravelRequestId == id);
+        }
     }
 }

@@ -78,41 +78,41 @@ namespace TravelDesk.Controllers
         }
 
 
-        // PUT: api/TravelRequest/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateTravelRequest(int id, TravelRequestDto travelRequestDto)
-        {
-            var travelRequest = await _context.TravelRequests.FindAsync(id);
+        //// PUT: api/TravelRequest/5
+        //[HttpPut("{id}")]
+        //public async Task<IActionResult> UpdateTravelRequest(int id, TravelRequestDto travelRequestDto)
+        //{
+        //    var travelRequest = await _context.TravelRequests.FindAsync(id);
 
-            if (travelRequest == null)
-            {
-                return NotFound();
-            }
+        //    if (travelRequest == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            travelRequest.Status = travelRequestDto.Status;
-            travelRequest.Comments = travelRequestDto.Comments;
-            travelRequest.ModifiedOn = DateTime.Now;
+        //    travelRequest.Status = travelRequestDto.Status;
+        //    travelRequest.Comments = travelRequestDto.Comments;
+        //    travelRequest.ModifiedOn = DateTime.Now;
 
-            _context.Entry(travelRequest).State = EntityState.Modified;
+        //    _context.Entry(travelRequest).State = EntityState.Modified;
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!TravelRequestExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+        //    try
+        //    {
+        //        await _context.SaveChangesAsync();
+        //    }
+        //    catch (DbUpdateConcurrencyException)
+        //    {
+        //        if (!TravelRequestExists(id))
+        //        {
+        //            return NotFound();
+        //        }
+        //        else
+        //        {
+        //            throw;
+        //        }
+        //    }
 
-            return NoContent();
-        }
+        //    return NoContent();
+        //}
         [HttpGet("user/{userId}")]
         public async Task<ActionResult<IEnumerable<TravelRequestDto>>> GetTravelRequestsByUserId(int userId)
         {
@@ -158,50 +158,50 @@ namespace TravelDesk.Controllers
             return Ok(travelRequests);
         }
 
-        [HttpGet("{TravelRequestId}")]
-        public async Task<ActionResult<TravelRequestDto>> GetTravelRequest(int TravelRequestId)
-        {
-            var travelRequest = await _context.TravelRequests
-                .Include(tr => tr.User)
-                .ThenInclude(u => u.Department)
-                .Include(tr => tr.Project)
-                .Where(tr => tr.TravelRequestId == TravelRequestId)
-                .Select(tr => new TravelRequestDto
-                {
-                    TravelRequestId = tr.TravelRequestId,
-                    User = new UserDto
-                    {
-                        UserId = tr.User.UserId,
-                        FirstName = tr.User.FirstName,
-                        LastName = tr.User.LastName,
-                        Department = new DepartmentDto
-                        {
-                            DepartmentId = tr.User.Department.DepartmentId,
-                            DepartmentName = tr.User.Department.DepartmentName
-                        }
-                    },
-                    Project = new ProjectDto
-                    {
-                        ProjectId = tr.Project.ProjectId,
-                        ProjectName = tr.Project.ProjectName
-                    },
-                    ReasonForTravel = tr.ReasonForTravel,
-                    FromDate = tr.FromDate,
-                    ToDate = tr.ToDate,
-                    FromLocation = tr.FromLocation,
-                    ToLocation = tr.ToLocation,
-                    Status = tr.Status,
-                    Comments = tr.Comments
-                })
-                .FirstOrDefaultAsync();
+        //[HttpGet("{TravelRequestId}")]
+        //public async Task<ActionResult<TravelRequestDto>> GetTravelRequest(int TravelRequestId)
+        //{
+        //    var travelRequest = await _context.TravelRequests
+        //        .Include(tr => tr.User)
+        //        .ThenInclude(u => u.Department)
+        //        .Include(tr => tr.Project)
+        //        .Where(tr => tr.TravelRequestId == TravelRequestId)
+        //        .Select(tr => new TravelRequestDto
+        //        {
+        //            TravelRequestId = tr.TravelRequestId,
+        //            User = new UserDto
+        //            {
+        //                UserId = tr.User.UserId,
+        //                FirstName = tr.User.FirstName,
+        //                LastName = tr.User.LastName,
+        //                Department = new DepartmentDto
+        //                {
+        //                    DepartmentId = tr.User.Department.DepartmentId,
+        //                    DepartmentName = tr.User.Department.DepartmentName
+        //                }
+        //            },
+        //            Project = new ProjectDto
+        //            {
+        //                ProjectId = tr.Project.ProjectId,
+        //                ProjectName = tr.Project.ProjectName
+        //            },
+        //            ReasonForTravel = tr.ReasonForTravel,
+        //            FromDate = tr.FromDate,
+        //            ToDate = tr.ToDate,
+        //            FromLocation = tr.FromLocation,
+        //            ToLocation = tr.ToLocation,
+        //            Status = tr.Status,
+        //            Comments = tr.Comments
+        //        })
+        //        .FirstOrDefaultAsync();
 
-            if (travelRequest == null)
-            {
-                return NotFound($"Travel request with ID {TravelRequestId} not found.");
-            }
+        //    if (travelRequest == null)
+        //    {
+        //        return NotFound($"Travel request with ID {TravelRequestId} not found.");
+        //    }
 
-            return Ok(travelRequest);
-        }
+        //    return Ok(travelRequest);
+        //}
 
         private bool TravelRequestExists(int id)
         {

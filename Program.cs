@@ -6,11 +6,17 @@ using TravelDesk.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    // Preserve object references to handle cycles
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+    options.JsonSerializerOptions.MaxDepth = 64; // Increase depth if needed
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -45,10 +51,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Add Swagger for API documentation
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -63,7 +65,6 @@ app.UseCors();
 
 // Ensure authentication is used
 app.UseAuthentication();
-
 app.UseAuthorization();
 
 app.MapControllers();

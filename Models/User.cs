@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using TravelDesk.Models;
 
 public class User
@@ -39,7 +40,7 @@ public class User
 
     public int? ManagerId { get; set; } // Make this nullable
     public User? Manager { get; set; }
-    
+    [JsonIgnore]
     public ICollection<TravelRequest> TravelRequests { get; set; } = new List<TravelRequest>();
     public int CreatedBy { get; set; }
     public DateTime CreatedOn { get; set; } = DateTime.Now;
