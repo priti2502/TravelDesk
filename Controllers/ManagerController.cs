@@ -25,7 +25,7 @@ namespace TravelDesk.Controllers
         public async Task<ActionResult<IEnumerable<TravelRequestDto>>> GetPendingRequests(int managerId)
         {
             var pendingRequests = await _context.TravelRequests
-                .Where(tr => tr.User.ManagerId == managerId && tr.Status == "Pending")
+                .Where(tr => tr.User.ManagerId == managerId)
                 .Include(tr => tr.Project)
                 .Include(tr => tr.User)
                 .Select(tr => new TravelRequestDto
