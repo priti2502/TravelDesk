@@ -20,14 +20,43 @@ namespace TravelDesk.Controllers
             _context = context;
         }
 
-        // Endpoint to retrieve all travel requests
         [HttpGet("GetAllRequests")]
         public async Task<IActionResult> GetAllRequests()
         {
             try
             {
                 var travelRequests = await _context.TravelRequests
-                    
+                    .Include(tr => tr.User) // Include the User details
+                    .Select(tr => new
+                    {
+                        tr.TravelRequestId,
+                        tr.Status,
+                        tr.Comments,
+                        tr.FromDate,
+                        tr.ToDate,
+                        tr.ReasonForTravel,
+                        tr.FromLocation,
+                        tr.ToLocation, 
+                        tr.TicketUrl,
+                        
+                        User = new
+                        {
+                            tr.User.UserId,
+                            tr.User.FirstName,
+                            tr.User.LastName,
+                            tr.User.Email
+                        },
+                        Project = new
+                        {
+                            tr.Project.ProjectId,
+                            tr.Project.ProjectName
+                        },
+                        Department = new
+                        {
+                            tr.Department.DepartmentId,
+                            tr.Department.DepartmentName
+                        }
+                    })
                     .ToListAsync();
 
                 if (travelRequests == null || travelRequests.Count == 0)
@@ -42,6 +71,8 @@ namespace TravelDesk.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
+
 
         [HttpPost("BookTicket/{travelRequestId}")]
         public async Task<IActionResult> BookTicket(int travelRequestId, [FromBody] BookingDetails bookingDetails)

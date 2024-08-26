@@ -35,7 +35,7 @@ namespace TravekDesk.Controllers
                 .Include(u => u.Role)
                 .Include(u => u.Department)
                 .Include(u => u.Manager)
-                .Where(u=>u.Role.RoleName!="Admin")
+                .Where(u=>u.Role.RoleName!="Admin" && u.IsActive==true)
                 .ToList();
 
             return Ok(users);
@@ -93,13 +93,14 @@ namespace TravekDesk.Controllers
         [HttpDelete("users/{id}")]
         public IActionResult DeleteUser(int id)
         {
-            var user = _context.Users.Find(id);
+
+            var user = _context.Users.SingleOrDefault(x=>x.UserId==id && x.IsActive==true);
             if (user == null)
             {
                 return NotFound();
             }
-
-            _context.Users.Remove(user);
+            user.IsActive= false; 
+           
             _context.SaveChanges();
             return NoContent();
         }

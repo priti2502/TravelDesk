@@ -25,7 +25,7 @@ namespace TravelDesk.Controllers
             [HttpGet]
             public ActionResult<IEnumerable<Role>> GetRoles()
             {
-                var roles = _context.Roles.ToList();
+                var roles = _context.Roles.Where(r => r.RoleName != "Admin").ToList();
                 return Ok(roles);
             }
 
