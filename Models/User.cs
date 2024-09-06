@@ -37,7 +37,7 @@ public class User
     [Required]
     public int DepartmentId { get; set; }
     public Department? Department { get; set; }
-
+    
     public int? ManagerId { get; set; } // Make this nullable
     public User? Manager { get; set; }
     [JsonIgnore]

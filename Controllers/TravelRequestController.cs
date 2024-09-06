@@ -76,43 +76,35 @@ namespace TravelDesk.Controllers
 
             return CreatedAtAction(nameof(GetTravelRequests), new { id = travelRequest.TravelRequestId }, travelRequest);
         }
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateTravelRequest(int id, [FromBody] TravelRequestDto travelRequestDto)
+        {
+            var existingTravelRequest = await _context.TravelRequests
+                .Include(tr => tr.User)
+                .Include(tr => tr.Project)
+                .FirstOrDefaultAsync(tr => tr.TravelRequestId == id);
 
+            if (existingTravelRequest == null)
+            {
+                return NotFound();
+            }
 
-        //// PUT: api/TravelRequest/5
-        //[HttpPut("{id}")]
-        //public async Task<IActionResult> UpdateTravelRequest(int id, TravelRequestDto travelRequestDto)
-        //{
-        //    var travelRequest = await _context.TravelRequests.FindAsync(id);
+            existingTravelRequest.ReasonForTravel = travelRequestDto.ReasonForTravel;
+            existingTravelRequest.ProjectId = travelRequestDto.Project.ProjectId;
+            existingTravelRequest.FromLocation = travelRequestDto.FromLocation;
+            existingTravelRequest.ToLocation = travelRequestDto.ToLocation;
+            existingTravelRequest.FromDate = travelRequestDto.FromDate;
+            existingTravelRequest.ToDate = travelRequestDto.ToDate;
+            existingTravelRequest.Status = "Pending"; 
+            existingTravelRequest.Comments = null; 
 
-        //    if (travelRequest == null)
-        //    {
-        //        return NotFound();
-        //    }
+            // You might want to handle Status and Comments if necessary, but typically you might not update them.
 
-        //    travelRequest.Status = travelRequestDto.Status;
-        //    travelRequest.Comments = travelRequestDto.Comments;
-        //    travelRequest.ModifiedOn = DateTime.Now;
+            _context.Entry(existingTravelRequest).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
 
-        //    _context.Entry(travelRequest).State = EntityState.Modified;
-
-        //    try
-        //    {
-        //        await _context.SaveChangesAsync();
-        //    }
-        //    catch (DbUpdateConcurrencyException)
-        //    {
-        //        if (!TravelRequestExists(id))
-        //        {
-        //            return NotFound();
-        //        }
-        //        else
-        //        {
-        //            throw;
-        //        }
-        //    }
-
-        //    return NoContent();
-        //}
+            return NoContent();
+        }
         [HttpGet("user/{userId}")]
         public async Task<ActionResult<IEnumerable<TravelRequestDto>>> GetTravelRequestsByUserId(int userId)
         {

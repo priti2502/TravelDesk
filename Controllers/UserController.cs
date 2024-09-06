@@ -1,31 +1,24 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
 using System.Collections.Generic;
 using System.Linq;
 using TravelDesk.Data;
 using TravelDesk.Models;
 
-
-namespace TravekDesk.Controllers
+namespace TravelDesk.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-
     public class UserController : ControllerBase
     {
         private readonly TravelDeskContext _context;
-
         private readonly IConfiguration _configuration;
-
-
 
         public UserController(TravelDeskContext context, IConfiguration configuration)
         {
             _context = context;
             _configuration = configuration;
-
         }
 
         [HttpGet("users")]
@@ -35,13 +28,11 @@ namespace TravekDesk.Controllers
                 .Include(u => u.Role)
                 .Include(u => u.Department)
                 .Include(u => u.Manager)
-                .Where(u=>u.Role.RoleName!="Admin" && u.IsActive==true)
+                .Where(u => u.Role.RoleName != "Admin" && u.IsActive == true)
                 .ToList();
 
             return Ok(users);
         }
-
-
 
         [HttpPost("users")]
         public ActionResult<User> AddUser(User user)
@@ -57,11 +48,11 @@ namespace TravekDesk.Controllers
         }
 
         [HttpPut("users/{id}")]
-        public IActionResult UpdateUser(int id, User updateUser)
+        public IActionResult UpdateUser(int id, [FromBody] User updateUser)
         {
             if (id != updateUser.UserId)
             {
-                return BadRequest();
+                return BadRequest("User ID mismatch.");
             }
 
             var existingUser = _context.Users
@@ -72,16 +63,30 @@ namespace TravekDesk.Controllers
 
             if (existingUser == null)
             {
-                return NotFound();
+                return NotFound("User not found.");
             }
 
-            // Update only specific fields
-            existingUser.FirstName = updateUser.FirstName ?? existingUser.FirstName;
-            existingUser.LastName = updateUser.LastName ?? existingUser.LastName;
-            existingUser.Password = updateUser.Password ?? existingUser.Password;
-            existingUser.Address = updateUser.Address ?? existingUser.Address;
+            // Update fields if new values are provided
+            if (!string.IsNullOrWhiteSpace(updateUser.FirstName))
+            {
+                existingUser.FirstName = updateUser.FirstName;
+            }
 
-            // Save changes
+            if (!string.IsNullOrWhiteSpace(updateUser.LastName))
+            {
+                existingUser.LastName = updateUser.LastName;
+            }
+
+            if (!string.IsNullOrWhiteSpace(updateUser.Address))
+            {
+                existingUser.Address = updateUser.Address;
+            }
+
+            if (!string.IsNullOrWhiteSpace(updateUser.Password))
+            {
+                existingUser.Password = updateUser.Password;
+            }
+
             _context.Entry(existingUser).State = EntityState.Modified;
             _context.SaveChanges();
 
@@ -93,17 +98,34 @@ namespace TravekDesk.Controllers
         [HttpDelete("users/{id}")]
         public IActionResult DeleteUser(int id)
         {
-
-            var user = _context.Users.SingleOrDefault(x=>x.UserId==id && x.IsActive==true);
+            var user = _context.Users.SingleOrDefault(x => x.UserId == id && x.IsActive == true);
             if (user == null)
             {
                 return NotFound();
             }
-            user.IsActive= false; 
-           
+            user.IsActive = false;
+
             _context.SaveChanges();
             return NoContent();
         }
+
+        [HttpGet("users/{userId}")]
+        public ActionResult<User> GetUserById(int userId)
+        {
+            var user = _context.Users
+                .Include(u => u.Role)
+                .Include(u => u.Department)
+                .Include(u => u.Manager)
+                .FirstOrDefault(u => u.UserId == userId && u.IsActive == true);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(user);
+        }
+
         [HttpGet("managers")]
         public IActionResult GetManagers()
         {
@@ -115,41 +137,6 @@ namespace TravekDesk.Controllers
                .ToList();
 
             return Ok(users);
-
         }
-
-        //[HttpGet("current")]
-        //// Assuming you want to restrict this endpoint to authorized users only
-        //public async Task<ActionResult<User>> GetCurrentUser()
-        //{
-        //    // Assuming the user ID is available in the Claims of the authenticated user
-        //    var userId = User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value;
-
-        //    if (userId == null)
-        //    {
-        //        return Unauthorized();
-        //    }
-
-        //    var user = await _context.Users
-        //        .Include(u => u.Department)
-        //        .Where(u => u.UserId == int.Parse(userId))
-        //        .FirstOrDefaultAsync();
-
-        //    if (user == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    // Optional: Select specific properties to return
-        //    var userResponse = new
-        //    {
-        //        user.UserId,
-        //        user.FirstName,
-        //        user.LastName,
-        //        DepartmentName = user.Department.DepartmentName
-        //    };
-
-        //    return Ok(userResponse);
-        //}
     }
-    }
+}
