@@ -48,50 +48,34 @@ namespace TravelDesk.Controllers
         }
 
         [HttpPut("users/{id}")]
-        public IActionResult UpdateUser(int id, [FromBody] User updateUser)
+        public IActionResult UpdateUser(int id, User user)
         {
-            if (id != updateUser.UserId)
+            if (id != user.UserId)
             {
                 return BadRequest("User ID mismatch.");
             }
 
-            var existingUser = _context.Users
-                .Include(u => u.Role)
-                .Include(u => u.Department)
-                .Include(u => u.Manager)
-                .FirstOrDefault(u => u.UserId == id);
-
+            var existingUser = _context.Users.Find(id);
             if (existingUser == null)
             {
                 return NotFound("User not found.");
             }
-
-            // Update fields if new values are provided
-            if (!string.IsNullOrWhiteSpace(updateUser.FirstName))
-            {
-                existingUser.FirstName = updateUser.FirstName;
-            }
-
-            if (!string.IsNullOrWhiteSpace(updateUser.LastName))
-            {
-                existingUser.LastName = updateUser.LastName;
-            }
-
-            if (!string.IsNullOrWhiteSpace(updateUser.Address))
-            {
-                existingUser.Address = updateUser.Address;
-            }
-
-            if (!string.IsNullOrWhiteSpace(updateUser.Password))
-            {
-                existingUser.Password = updateUser.Password;
-            }
+            // Update the properties
+            existingUser.FirstName = user.FirstName;
+            existingUser.LastName = user.LastName;
+            existingUser.Address = user.Address;
+            existingUser.Password = user.Password;
+          //  existingUser.RoleId = user.RoleId;
+           // existingUser.ManagerId = user.ManagerId;
+            //existingUser.DepartmentId = user.DepartmentId;
+            existingUser.ModifiedOn = DateTime.Now; // Ensure modified timestamp is updated
 
             _context.Entry(existingUser).State = EntityState.Modified;
             _context.SaveChanges();
 
             return NoContent();
         }
+
 
 
 

@@ -26,19 +26,18 @@ namespace TravelDesk.Controllers
             try
             {
                 var travelRequests = await _context.TravelRequests
-                    .Include(tr => tr.User) // Include the User details
+                    .Include(tr => tr.User)
+                    .Include(tr => tr.Project)  // Ensure Project is included
+                    .Include(tr => tr.Department)  // Ensure Department is included
                     .Select(tr => new
                     {
                         tr.TravelRequestId,
                         tr.Status,
-                        tr.Comments,
                         tr.FromDate,
                         tr.ToDate,
                         tr.ReasonForTravel,
                         tr.FromLocation,
-                        tr.ToLocation, 
-                        tr.TicketUrl,
-                        
+                        tr.ToLocation,
                         User = new
                         {
                             tr.User.UserId,
@@ -72,10 +71,8 @@ namespace TravelDesk.Controllers
             }
         }
 
-
-
         [HttpPost("BookTicket/{travelRequestId}")]
-        public async Task<IActionResult> BookTicket(int travelRequestId, [FromBody] BookingDetails bookingDetails)
+        public async Task<IActionResult> BookTicket(int travelRequestId)
         {
             try
             {
@@ -90,13 +87,7 @@ namespace TravelDesk.Controllers
 
                 // Update the travel request with booking details
                 travelRequest.Status = "Booked";
-                travelRequest.Comments = bookingDetails.Comments; // Update comments
-
-                // Save the booking confirmation URL if available
-                if (!string.IsNullOrEmpty(bookingDetails.TicketUrl))
-                {
-                    travelRequest.TicketUrl = bookingDetails.TicketUrl;
-                }
+                // No comments update here
 
                 _context.TravelRequests.Update(travelRequest);
                 await _context.SaveChangesAsync();
@@ -111,7 +102,7 @@ namespace TravelDesk.Controllers
         }
 
         [HttpPost("ReturnToManager/{travelRequestId}")]
-        public async Task<IActionResult> ReturnToManager(int travelRequestId, [FromBody] BookingDetails bookingDetails)
+        public async Task<IActionResult> ReturnToManager(int travelRequestId)
         {
             try
             {
@@ -125,8 +116,7 @@ namespace TravelDesk.Controllers
 
                 // Reassign request to manager
                 travelRequest.Status = "Returned to Manager";
-                travelRequest.Comments = bookingDetails.Comments;
-             
+                // No comments update here
 
                 _context.TravelRequests.Update(travelRequest);
                 await _context.SaveChangesAsync();
@@ -140,7 +130,7 @@ namespace TravelDesk.Controllers
         }
 
         [HttpPost("ReturnToEmployee/{travelRequestId}")]
-        public async Task<IActionResult> ReturnToEmployee(int travelRequestId, [FromBody] BookingDetails bookingDetails)
+        public async Task<IActionResult> ReturnToEmployee(int travelRequestId)
         {
             try
             {
@@ -154,8 +144,7 @@ namespace TravelDesk.Controllers
 
                 // Reassign request to employee
                 travelRequest.Status = "Returned to Employee";
-                travelRequest.Comments = bookingDetails.Comments;
-               
+                // No comments update here
 
                 _context.TravelRequests.Update(travelRequest);
                 await _context.SaveChangesAsync();
@@ -169,9 +158,8 @@ namespace TravelDesk.Controllers
         }
 
         [HttpPost("CloseRequest/{travelRequestId}")]
-        public async Task<IActionResult> CloseRequest(int travelRequestId, [FromBody] BookingDetails bookingDetails)
+        public async Task<IActionResult> CloseRequest(int travelRequestId)
         {
-            // Ensure that CommentsRequest class matches the expected JSON payload
             try
             {
                 var travelRequest = await _context.TravelRequests
@@ -184,8 +172,7 @@ namespace TravelDesk.Controllers
 
                 // Close the request with complete status
                 travelRequest.Status = "Completed";
-                //travelRequest.Comments = bookingDetails.Comments;
-               
+                // No comments update here
 
                 _context.TravelRequests.Update(travelRequest);
                 await _context.SaveChangesAsync();
@@ -197,8 +184,5 @@ namespace TravelDesk.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
-
-       
-
     }
 }

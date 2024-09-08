@@ -33,15 +33,15 @@ namespace TravelDesk.Data
             modelBuilder.Entity<Department>().HasData(
                 new Department { DepartmentId = 1, DepartmentName = "IT", CreatedBy = 1, CreatedOn = DateTime.Now, IsActive = true },
                 new Department { DepartmentId = 2, DepartmentName = "HR", CreatedBy = 1, CreatedOn = DateTime.Now, IsActive = true },
-                new Department { DepartmentId = 3, DepartmentName = "Admin", CreatedBy = 1, CreatedOn = DateTime.Now, IsActive = true },
-                   new Department { DepartmentId = 4, DepartmentName = "Travel", CreatedBy = 1, CreatedOn = DateTime.Now, IsActive = true }
+                new Department { DepartmentId = 3, DepartmentName = "SAlES", CreatedBy = 1, CreatedOn = DateTime.Now, IsActive = true }
+               
 
                 );
 
             modelBuilder.Entity<Project>().HasData(
-      new Project { ProjectId = 1, ProjectName = "Project Alpha", CreatedBy = 1, CreatedOn = DateTime.Now, IsActive = true },
-      new Project { ProjectId = 2, ProjectName = "Project Beta", CreatedBy = 1, CreatedOn = DateTime.Now, IsActive = true },
-      new Project { ProjectId = 3, ProjectName = "Project Gamma", CreatedBy = 1, CreatedOn = DateTime.Now, IsActive = true }
+      new Project { ProjectId = 1, ProjectName = "TravelDesk", CreatedBy = 1, CreatedOn = DateTime.Now, IsActive = true },
+      new Project { ProjectId = 2, ProjectName = "DWF", CreatedBy = 1, CreatedOn = DateTime.Now, IsActive = true },
+      new Project { ProjectId = 3, ProjectName = "IRIS", CreatedBy = 1, CreatedOn = DateTime.Now, IsActive = true }
   );
 
             modelBuilder.Entity<User>()
@@ -66,9 +66,9 @@ namespace TravelDesk.Data
                 .WithMany(p => p.TravelRequests)
                 .HasForeignKey(tr => tr.ProjectId)
                 .OnDelete(DeleteBehavior.Restrict); // Or NoAction
-            modelBuilder.Entity<TravelRequest>()
-    .Property(tr => tr.TicketUrl)
-    .IsRequired(false); // Allow nulls
+            modelBuilder.Entity<TravelRequest>();
+    
+   
 
 
 
