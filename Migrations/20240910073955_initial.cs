@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace TravelDesk.Migrations
 {
     /// <inheritdoc />
-    public partial class updated : Migration
+    public partial class initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -126,7 +126,6 @@ namespace TravelDesk.Migrations
                     FromLocation = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ToLocation = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Comments = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    TicketUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedOn = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ModifiedOn = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -160,9 +159,9 @@ namespace TravelDesk.Migrations
                 columns: new[] { "DepartmentId", "CreatedBy", "CreatedOn", "DepartmentName", "IsActive", "ModifiedBy", "ModifiedOn" },
                 values: new object[,]
                 {
-                    { 1, 1, new DateTime(2024, 9, 7, 23, 57, 9, 274, DateTimeKind.Local).AddTicks(4925), "IT", true, null, null },
-                    { 2, 1, new DateTime(2024, 9, 7, 23, 57, 9, 274, DateTimeKind.Local).AddTicks(4927), "HR", true, null, null },
-                    { 3, 1, new DateTime(2024, 9, 7, 23, 57, 9, 274, DateTimeKind.Local).AddTicks(4929), "SAlES", true, null, null }
+                    { 1, 1, new DateTime(2024, 9, 10, 13, 9, 54, 745, DateTimeKind.Local).AddTicks(8631), "IT", true, null, null },
+                    { 2, 1, new DateTime(2024, 9, 10, 13, 9, 54, 745, DateTimeKind.Local).AddTicks(8634), "HR", true, null, null },
+                    { 3, 1, new DateTime(2024, 9, 10, 13, 9, 54, 745, DateTimeKind.Local).AddTicks(8636), "SALES", true, null, null }
                 });
 
             migrationBuilder.InsertData(
@@ -170,9 +169,9 @@ namespace TravelDesk.Migrations
                 columns: new[] { "ProjectId", "CreatedBy", "CreatedOn", "IsActive", "ModifiedBy", "ModifiedOn", "ProjectName" },
                 values: new object[,]
                 {
-                    { 1, 1, new DateTime(2024, 9, 7, 23, 57, 9, 274, DateTimeKind.Local).AddTicks(4956), true, null, null, "TravelDesk" },
-                    { 2, 1, new DateTime(2024, 9, 7, 23, 57, 9, 274, DateTimeKind.Local).AddTicks(4961), true, null, null, "DWF" },
-                    { 3, 1, new DateTime(2024, 9, 7, 23, 57, 9, 274, DateTimeKind.Local).AddTicks(4963), true, null, null, "IRIS" }
+                    { 1, 1, new DateTime(2024, 9, 10, 13, 9, 54, 745, DateTimeKind.Local).AddTicks(8671), true, null, null, "TravelDesk" },
+                    { 2, 1, new DateTime(2024, 9, 10, 13, 9, 54, 745, DateTimeKind.Local).AddTicks(8676), true, null, null, "DWF" },
+                    { 3, 1, new DateTime(2024, 9, 10, 13, 9, 54, 745, DateTimeKind.Local).AddTicks(8677), true, null, null, "IRIS" }
                 });
 
             migrationBuilder.InsertData(
@@ -180,10 +179,10 @@ namespace TravelDesk.Migrations
                 columns: new[] { "RoleId", "CreatedBy", "CreatedOn", "IsActive", "ModifiedBy", "ModifiedOn", "RoleName" },
                 values: new object[,]
                 {
-                    { 1, 1, new DateTime(2024, 9, 7, 23, 57, 9, 274, DateTimeKind.Local).AddTicks(4714), true, null, null, "Admin" },
-                    { 2, 1, new DateTime(2024, 9, 7, 23, 57, 9, 274, DateTimeKind.Local).AddTicks(4718), true, null, null, "TravelAdmin" },
-                    { 3, 1, new DateTime(2024, 9, 7, 23, 57, 9, 274, DateTimeKind.Local).AddTicks(4720), true, null, null, "Manager" },
-                    { 4, 1, new DateTime(2024, 9, 7, 23, 57, 9, 274, DateTimeKind.Local).AddTicks(4721), true, null, null, "Employee" }
+                    { 1, 1, new DateTime(2024, 9, 10, 13, 9, 54, 745, DateTimeKind.Local).AddTicks(8428), true, null, null, "Admin" },
+                    { 2, 1, new DateTime(2024, 9, 10, 13, 9, 54, 745, DateTimeKind.Local).AddTicks(8431), true, null, null, "TravelAdmin" },
+                    { 3, 1, new DateTime(2024, 9, 10, 13, 9, 54, 745, DateTimeKind.Local).AddTicks(8433), true, null, null, "Manager" },
+                    { 4, 1, new DateTime(2024, 9, 10, 13, 9, 54, 745, DateTimeKind.Local).AddTicks(8435), true, null, null, "Employee" }
                 });
 
             migrationBuilder.CreateIndex(

@@ -33,7 +33,7 @@ namespace TravelDesk.Data
             modelBuilder.Entity<Department>().HasData(
                 new Department { DepartmentId = 1, DepartmentName = "IT", CreatedBy = 1, CreatedOn = DateTime.Now, IsActive = true },
                 new Department { DepartmentId = 2, DepartmentName = "HR", CreatedBy = 1, CreatedOn = DateTime.Now, IsActive = true },
-                new Department { DepartmentId = 3, DepartmentName = "SAlES", CreatedBy = 1, CreatedOn = DateTime.Now, IsActive = true }
+                new Department { DepartmentId = 3, DepartmentName = "SALES", CreatedBy = 1, CreatedOn = DateTime.Now, IsActive = true }
                
 
                 );

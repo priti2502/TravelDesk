@@ -289,7 +289,7 @@ namespace TravelDesk.Controllers
         {
             PdfPCell cell = new PdfPCell(new Phrase(text, font))
             {
-                BackgroundColor = isHeader ? BaseColor.LIGHT_GRAY : BaseColor.WHITE,
+                BackgroundColor = isHeader ? BaseColor.YELLOW : BaseColor.WHITE,
                 BorderWidth = 1f,
                 Padding = 8f
             };
@@ -299,6 +299,50 @@ namespace TravelDesk.Controllers
 
 
 
+        [HttpGet("{travelRequestId}")]
+        public async Task<ActionResult<TravelRequestDto>> GetTravelRequestById(int travelRequestId)
+        {
+            var travelRequest = await _context.TravelRequests
+                .Include(tr => tr.User)
+                .Include(tr => tr.Project)
+                .Include(tr => tr.User.Department)
+                .Where(tr => tr.TravelRequestId == travelRequestId)
+                .Select(tr => new TravelRequestDto
+                {
+                    TravelRequestId = tr.TravelRequestId,
+                    User = new UserDto
+                    {
+                        UserId = tr.User.UserId,
+                        FirstName = tr.User.FirstName,
+                        LastName = tr.User.LastName,
+                        Department = new DepartmentDto
+                        {
+                            DepartmentId = tr.User.Department.DepartmentId,
+                            DepartmentName = tr.User.Department.DepartmentName
+                        }
+                    },
+                    Project = new ProjectDto
+                    {
+                        ProjectId = tr.Project.ProjectId,
+                        ProjectName = tr.Project.ProjectName
+                    },
+                    ReasonForTravel = tr.ReasonForTravel,
+                    FromDate = tr.FromDate,
+                    ToDate = tr.ToDate,
+                    FromLocation = tr.FromLocation,
+                    ToLocation = tr.ToLocation,
+                    Status = tr.Status,
+                    Comments = tr.Comments
+                })
+                .FirstOrDefaultAsync();
+
+            if (travelRequest == null)
+            {
+                return NotFound($"Travel request with ID {travelRequestId} not found.");
+            }
+
+            return Ok(travelRequest);
+        }
 
 
 

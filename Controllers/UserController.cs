@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using TravelDesk.Data;
 using TravelDesk.Models;
 
@@ -22,85 +22,112 @@ namespace TravelDesk.Controllers
         }
 
         [HttpGet("users")]
-        public ActionResult<IEnumerable<User>> GetUsers()
+        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
-            var users = _context.Users
+            var users = await _context.Users
                 .Include(u => u.Role)
                 .Include(u => u.Department)
                 .Include(u => u.Manager)
-                .Where(u => u.Role.RoleName != "Admin" && u.IsActive == true)
-                .ToList();
+                .Where(u => u.Role.RoleName != "Admin" && u.IsActive)
+                .ToListAsync();
 
             return Ok(users);
         }
 
         [HttpPost("users")]
-        public ActionResult<User> AddUser(User user)
+        public async Task<ActionResult<User>> AddUser(User user)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
+            if (await _context.Users.AnyAsync(u => u.Email == user.Email))
+            {
+                return BadRequest(new { message = "Email is already in use." });
+            }
+
+            if (await _context.Users.AnyAsync(u => u.MobileNum == user.MobileNum))
+            {
+                return BadRequest(new { message = "Mobile number is already in use." });
+            }
+
             _context.Users.Add(user);
-            _context.SaveChanges();
-            return CreatedAtAction(nameof(GetUsers), new { id = user.UserId }, user);
+            await _context.SaveChangesAsync();
+            return CreatedAtAction(nameof(GetUserById), new { userId = user.UserId }, user);
         }
 
         [HttpPut("users/{id}")]
-        public IActionResult UpdateUser(int id, User user)
+        public async Task<IActionResult> UpdateUser(int id, User user)
         {
             if (id != user.UserId)
             {
                 return BadRequest("User ID mismatch.");
             }
 
-            var existingUser = _context.Users.Find(id);
+            var existingUser = await _context.Users.FindAsync(id);
             if (existingUser == null)
             {
                 return NotFound("User not found.");
             }
+            if (user.Email != existingUser.Email)
+            {
+                if (await _context.Users.AnyAsync(u => u.Email == user.Email))
+                {
+                    return BadRequest(new { message = "Email is already in use." });
+                }
+            }
+
+            if (user.MobileNum != existingUser.MobileNum)
+            {
+                if (await _context.Users.AnyAsync(u => u.MobileNum == user.MobileNum))
+                {
+                    return BadRequest(new { message = "Mobile number is already in use." });
+                }
+            }
+
+
+
+
             // Update the properties
             existingUser.FirstName = user.FirstName;
             existingUser.LastName = user.LastName;
             existingUser.Address = user.Address;
-            existingUser.Password = user.Password;
-          //  existingUser.RoleId = user.RoleId;
+            existingUser.Password = user.Password; // Consider hashing passwords
+           // existingUser.RoleId = user.RoleId;
            // existingUser.ManagerId = user.ManagerId;
-            //existingUser.DepartmentId = user.DepartmentId;
-            existingUser.ModifiedOn = DateTime.Now; // Ensure modified timestamp is updated
+           // existingUser.DepartmentId = user.DepartmentId;
+            existingUser.ModifiedOn = DateTime.Now;
 
             _context.Entry(existingUser).State = EntityState.Modified;
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-
-
-
         [HttpDelete("users/{id}")]
-        public IActionResult DeleteUser(int id)
+        public async Task<IActionResult> DeleteUser(int id)
         {
-            var user = _context.Users.SingleOrDefault(x => x.UserId == id && x.IsActive == true);
+            var user = await _context.Users.SingleOrDefaultAsync(x => x.UserId == id && x.IsActive);
             if (user == null)
             {
                 return NotFound();
             }
-            user.IsActive = false;
 
-            _context.SaveChanges();
+            user.IsActive = false;
+            await _context.SaveChangesAsync();
+
             return NoContent();
         }
 
         [HttpGet("users/{userId}")]
-        public ActionResult<User> GetUserById(int userId)
+        public async Task<ActionResult<User>> GetUserById(int userId)
         {
-            var user = _context.Users
+            var user = await _context.Users
                 .Include(u => u.Role)
                 .Include(u => u.Department)
                 .Include(u => u.Manager)
-                .FirstOrDefault(u => u.UserId == userId && u.IsActive == true);
+                .FirstOrDefaultAsync(u => u.UserId == userId && u.IsActive);
 
             if (user == null)
             {
@@ -111,16 +138,30 @@ namespace TravelDesk.Controllers
         }
 
         [HttpGet("managers")]
-        public IActionResult GetManagers()
+        public async Task<IActionResult> GetManagers()
         {
-            var users = _context.Users
-               .Include(u => u.Role)
-               .Include(u => u.Department)
-               .Include(u => u.Manager)
-               .Where(u => u.RoleId == 3)
-               .ToList();
+            var users = await _context.Users
+                .Include(u => u.Role)
+                .Include(u => u.Department)
+                .Include(u => u.Manager)
+                .Where(u => u.RoleId == 3)
+                .ToListAsync();
 
             return Ok(users);
+        }
+
+        [HttpGet("check-email")]
+        public async Task<IActionResult> CheckEmail([FromQuery] string email)
+        {
+            var userExists = await _context.Users.AnyAsync(u => u.Email == email);
+            return Ok(new { exists = userExists });
+        }
+
+        [HttpGet("check-mobile")]
+        public async Task<IActionResult> CheckMobile([FromQuery] string mobileNum)
+        {
+            var userExists = await _context.Users.AnyAsync(u => u.MobileNum == mobileNum);
+            return Ok(new { exists = userExists });
         }
     }
 }
